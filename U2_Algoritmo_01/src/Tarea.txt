@@ -1,0 +1,3 @@
+Implemente un programa que lea una instancia del problema agente viajero
+(TSP: Traveling Salesman Problem)
+y almacene en un arreglo y las variables necesarias. El programa debera desplegar el arreglo {
