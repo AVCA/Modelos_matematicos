@@ -69,13 +69,26 @@ public class TSP {
 	public static void Permutaciones(int m) {
 		System.out.println("============================");
 		System.out.println("Permutaciones:");
-		ArrayList<Integer> numeros = new ArrayList<Integer>();
 		ArrayList<String> a = new ArrayList<String>();
-		for (int i = 0; i < m; i++) {
-			numeros.add(i + 1);
-		}
+		a.add("1");
+		a.add("14");
+		a.add("13");
+		a.add("12");
+		a.add("7");
+		a.add("6");
+		a.add("15");
+		a.add("5");
+		a.add("11");
+		a.add("9");
+		a.add("10");
+		a.add("16");
+		a.add("3");
+		a.add("2");
+		a.add("4");
+		a.add("8");
+		distancia_euclidiana(a);
 		// Generamos las n permutaciones
-		combinaciones(a, numeros, 1);
+		//combinaciones(a, numeros, 1);
 	}
 
 	public static void combinaciones(ArrayList<String> permutacion, ArrayList<Integer> numeros, int n) {

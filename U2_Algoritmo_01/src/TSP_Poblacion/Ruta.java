@@ -1,8 +1,6 @@
 package TSP_Poblacion;
 
-import java.util.ArrayList;
-
-public class Ruta {
+public class Ruta  {
 	
 	String permutacion;
 	double distancia;
@@ -34,8 +32,7 @@ public class Ruta {
 	
 	@Override
 	public String toString() {
-		return permutacion + " , " + distancia;
+		return "["+permutacion + " , " + distancia+" ]";
 	}
-	
 	
 }
