@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 
+import javax.swing.plaf.synth.SynthSpinnerUI;
+
 public class TSP {
 
 	// Variables:
@@ -17,6 +19,7 @@ public class TSP {
 	static String min_p = "";
 	static ArrayList<Ruta> poblacion;
 	static ArrayList<Ruta> padres;
+	static ArrayList<Ruta> hijos;
 	static ArrayList<ArrayList<Double>> grafo;
 
 	// Algoritmo:
@@ -78,6 +81,7 @@ public class TSP {
 		}
 
 	}
+
 	// ============================================================================
 	// 2) Generar aleatoriamente poblacion inicial
 	// ============================================================================
@@ -98,28 +102,33 @@ public class TSP {
 		}
 		// Calcular aptitud de cada individuo.
 		for (int i = 0; i < poblacion.size(); i++) {
-			distancia_euclidiana(poblacion.get(i).getPermutacion(),i);
+			distancia_euclidiana(poblacion.get(i).getPermutacion(), i,poblacion);
 			// System.out.println((i+1) + " ["+poblacion.get(i) + " ]");
 		}
-		// 
+		//
 		System.out.println("========================================================");
 		padres = new ArrayList<Ruta>();
 		seleccion_Torneo();
-		int j=(padres.size()/2)-1;
-		for(int i=0;i<padres.size();i++) {
-			if(i>(padres.size()/2))
+		hijos = new ArrayList<Ruta>();
+		int x=0,y=x+1;
+		int j = (padres.size() / 2) - 1;
+		for (int i = 0; i < padres.size(); i++) {
+			if (i >= (padres.size() / 2))
 				break;
-			cruza(i,j);
+			System.out.println("Padres: "+i);
+			cruza(i,j,x,y);
+			x=x+2;y=x+1;
 			j++;
 		}
 		System.out.println("========================================================");
 		p++;
 	}
+
 	public static void permutaciones(String a, ArrayList<Integer> numeros, int n) {
 		// Revuelve de manera aleatoria los nodos
 		Collections.shuffle(numeros);
 		if (numeros.size() == 1) {
-			poblacion.add(new Ruta(a + " " + numeros.get(0),0));
+			poblacion.add(new Ruta(a + " " + numeros.get(0), 0));
 			c++;
 		}
 		for (int i = 0; i < numeros.size(); i++) {
@@ -129,6 +138,7 @@ public class TSP {
 			numeros.add(i, b);
 		}
 	}
+
 	// ============================================================================
 	// 3) Calcular aptitud de cada individuo. DISTANCIA EUCLIDIANDA
 	// ============================================================================
@@ -138,7 +148,8 @@ public class TSP {
 			nodos.add(Integer.parseInt(nodo[i]));
 		}
 	}
-	public static void distancia_euclidiana(String permutacion, int k) {
+
+	public static void distancia_euclidiana(String permutacion, int k, ArrayList<Ruta> poblacion) {
 		ArrayList<Integer> nodos = new ArrayList<Integer>();
 		nodos(permutacion, nodos);
 		Double distancia = 0.0, distancia_total = 0.0;
@@ -169,6 +180,7 @@ public class TSP {
 			}
 		}
 	}
+
 	// ============================================================================
 	// 4) Seleccionar (probabilısticamente) en base a aptitud. TORNEO
 	// ============================================================================
@@ -176,69 +188,159 @@ public class TSP {
 		// Seleccion del primer nodo:
 		// 1. Barajea los nodos:
 		// 2. Toma una pareja de nodos y compara su distancia.
-		comparacion_pareja();	
+		comparacion_pareja();
 		// Seleccion del segundo nodo:
 		// 4. Repite el paso 1.
 		comparacion_pareja();
 		// 5. Resultado: Lista con los nodos con menor distancia
 	}
+
 	public static void comparacion_pareja() {
 		Collections.shuffle(poblacion);
-		int j=0;
-		for(int i=0; i<poblacion.size();i++) {
+		int j = 0;
+		for (int i = 0; i < poblacion.size(); i++) {
 			j++;
 			// 3. Almacena el nodo con menor distancia.
-			if(poblacion.get(i).getDistancia()<poblacion.get(j).getDistancia()) {
+			if (poblacion.get(i).getDistancia() < poblacion.get(j).getDistancia()) {
 				padres.add(poblacion.get(i));
-			}
-			else
-			{
+			} else {
 				padres.add(poblacion.get(j));
 			}
-			i++;j++;
+			i++;
+			j++;
 		}
 	}
+
 	// ============================================================================
-	// 5) Aplicar operadores geneticos (cruza y mutacion). CRUZA: OX | MUTACION: 
+	// 5) Aplicar operadores geneticos (cruza y mutacion). CRUZA: OX | MUTACION:
 	// ============================================================================
-	public static void cruza(int i, int j) {
-		
-		System.out.println("P1: " + " ["+padres.get(i) + " ]");
-		System.out.println("P2: " + " ["+padres.get(j) + " ]");
-		
+	public static void cruza(int i, int j, int x, int y) {
+
+		System.out.println("P1:    " + " [" + padres.get(i) + " ]");
+		System.out.println("P2:    " + " [" + padres.get(j) + " ]");
+
 		ArrayList<Integer> P1 = new ArrayList<Integer>();
 		nodos(padres.get(i).getPermutacion(), P1);
 		ArrayList<Integer> P2 = new ArrayList<Integer>();
 		nodos(padres.get(j).getPermutacion(), P2);
-		
-		//1. Seleccionar (aleatoriamente) una sub-cadena P1.
-		ArrayList<Integer> subcadena = subcadena(P1,4,i);
-		
-		//System.out.println("Subcadena: "+subcadena);
-		//2. Producir un hijo copiando la sub-cadena en las posiciones correspondientes
-		
-		//a P1. Las posiciones restantes se dejan en blanco.
-		//3. Borrar los valores que ya se encuentren en la sub-cadena de P2. La secuencia
-		//resultante contiene los valores faltantes.
-		//4. Colocar los valores en posiciones no conocidas del hijo de izquierda a
-		//derecha.
-		//5. Para obtener el segundo hijo, se repiten los pasos del 1 al 4, pero tomando
-		//ahora la sub-cadena de P2.
-		System.out.println("---------------------------------------------");
-	}
-	public static ArrayList<Integer> subcadena(ArrayList<Integer> Padre, int n, int i) {
-		// Obtenemos n indices aleatorios que deseemos para formar la subcadena
-		for(int j=0;j<n;j++) {
-			int r = random();
-			System.out.println(Padre.get(r));
+		ArrayList<Integer> Hijo = new ArrayList<Integer>();
+
+		// Generacion del Hijo 1:
+		// 1. Seleccionar (aleatoriamente) una sub-cadena P1.
+		ArrayList<Integer> subcadena1 = subcadena(P1, 4, i);
+		// System.out.println("Subcadena de P1: " + subcadena);
+		// 2. Producir un hijo copiando la sub-cadena en las posiciones correspondientes
+		// a P1. Las posiciones restantes se dejan en blanco.
+		hijo_P1(subcadena1, P1);
+		// 3. Borrar los valores que ya se encuentren en la sub-cadena de P2. La
+		// secuencia
+		// resultante contiene los valores faltantes.
+		vaciar_P2(subcadena1, P2);
+		// 4. Colocar los valores en posiciones no conocidas del hijo de izquierda a
+		// derecha.
+		completar_hijo(subcadena1, P1, P2, Hijo);
+		//System.out.println("Hijo1: " + Hijo);
+		String permutacion = " ";
+		for (int k = 0; k < Hijo.size(); k++) {
+			permutacion = permutacion + Hijo.get(k) + " ";
 		}
-		return Padre;
+		hijos.add(new Ruta(permutacion, 0));
+		// 5. Para obtener el segundo hijo, se repiten los pasos del 1 al 4, pero
+		// tomando
+		// ahora la sub-cadena de P2.
+		P1.clear();
+		P2.clear();
+		Hijo.clear();
+		nodos(padres.get(i).getPermutacion(), P1);
+		nodos(padres.get(j).getPermutacion(), P2);
+		ArrayList<Integer> subcadena2 = subcadena(P2, 4, i);
+		hijo_P1(subcadena2, P2);
+		vaciar_P2(subcadena2, P1);
+		completar_hijo(subcadena2, P2, P1, Hijo);
+		//System.out.println("Hijo2: " + Hijo);
+		permutacion = " ";
+		for (int k = 0; k < Hijo.size(); k++) {
+			permutacion = permutacion + Hijo.get(k) + " ";
+		}
+		hijos.add(new Ruta(permutacion, 0));
+		//System.out.println(x+"-"+y);
+		distancia_euclidiana(hijos.get(x).getPermutacion(), x, hijos);
+		distancia_euclidiana(hijos.get(y).getPermutacion(), y, hijos);
+		System.out.println("Hijo1: " + " [" + hijos.get(x) + " ]");
+		System.out.println("Hijo2: " + " [" + hijos.get(y) + " ]");
+		System.out.println("---------------------------------------------");
+
 	}
+
+	public static void completar_hijo(ArrayList<Integer> subcadena, ArrayList<Integer> P1, ArrayList<Integer> P2,
+			ArrayList<Integer> Hijo) {
+		int j = 0, s = 0;
+		for (int i = 0; i < P1.size(); i++) {
+			if (!subcadena.contains(P1.get(i))) {
+				Hijo.add(P2.get(j));
+				j++;
+			} else {
+				Hijo.add(subcadena.get(s));
+				s++;
+			}
+		}
+	}
+
+	public static void vaciar_P2(ArrayList<Integer> subcadena, ArrayList<Integer> P2) {
+		// Eliminamos de P2 todos los nodos que coincidan con la sub-cadena
+		for (int i = 0; i < subcadena.size(); i++) {
+			if (P2.contains(subcadena.get(i))) {
+				P2.remove(subcadena.get(i));
+			}
+		}
+		// System.out.println("P2 sin sub-cadena: "+P2);
+	}
+
+	public static void hijo_P1(ArrayList<Integer> subcadena, ArrayList<Integer> P1) {
+		ArrayList<Integer> aux = new ArrayList<Integer>();
+		// System.out.print("Hijo [ ");
+		for (int k = 0; k < P1.size(); k++) {
+			if (!(subcadena.contains(P1.get(k)))) {
+				// Se deja "vacio" el espacion que no ocupamos aun
+				// System.out.print("x ");
+			} else {
+				// Conservamos el nodo que coincide con la sub-cadena
+				// System.out.print(P1.get(k) + " ");
+				aux.add(P1.get(k));
+			}
+		}
+		// System.out.print("]");
+		// System.out.println();
+		subcadena.clear();
+		for (int i = 0; i < aux.size(); i++) {
+			subcadena.add(aux.get(i));
+		}
+	}
+
+	public static ArrayList<Integer> subcadena(ArrayList<Integer> Padre, int n, int i) {
+		ArrayList<Integer> subcadena = new ArrayList<Integer>();
+		// Obtenemos n indices aleatorios que deseemos para formar la subcadena
+		for (int j = 0; j < n; j++) {
+			int r = random();
+			// Verificamos el que indice obtenido no
+			// ha sido seleccionando anteriormente
+			if (subcadena.contains(Padre.get(r))) {
+				while (subcadena.contains(Padre.get(r)))
+					// Generamos un nuevo indice
+					r = random();
+			}
+			// Almacenamos el nodo a la subcadena formada
+			subcadena.add(Padre.get(r));
+		}
+		return subcadena;
+	}
+
 	public static int random() {
 		// Generar numeros random de 1 <= n <= 10
 		int numero = (int) (Math.random() * 9) + 1;
 		return numero;
 	}
+
 	// ============================================================================
 	// 0) M A I N
 	// ============================================================================
@@ -253,7 +355,7 @@ public class TSP {
 		// Ejecuta los metodos:
 		// ========================================
 		archivo_lectura();
-		Poblacion(grafo.size(),100);
+		Poblacion(grafo.size(), 100);
 		// Calcular distancias de las padres
 		// distancia_euclidiana();
 		// ========================================
